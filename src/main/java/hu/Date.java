@@ -25,60 +25,159 @@ public class Date {
     validInputCheck(this.year, this.month, this.monthLength, this.day, this.hour, this.min);
   }
 
-  private void validInputCheck(int year, int month, MonthLength monthLength,  int day, int hour, int min) {
+  private void validInputCheck(int year, int month, MonthLength monthLength, int day, int hour, int min) {
     if (monthLength == MonthLength._28 && (day < 1 || day > 28)) {
       throw new RuntimeException("Invalid day");
     } else if (monthLength == MonthLength._30 && (day < 1 || day > 30)) {
-      throw  new RuntimeException("Invalid day");
+      throw new RuntimeException("Invalid day");
     } else if (monthLength == MonthLength._31 && (day < 1 || day > 31)) {
-      throw  new RuntimeException("Invalid day");
+      throw new RuntimeException("Invalid day");
     }
-    if (year < 0 || (month < 1 || month > 12) || (hour < 0 || hour > 23) || (min < 0 || min > 59)) {
+    int hourInMin = hour * 60 + min;
+    if (year < 0 || (month < 1 || month > 12) || (hour < 9 || hour > 17) || (min < 0 || min > 59) || (hourInMin < 540 || hourInMin > 1020)) {
       throw new RuntimeException("Invalid date");
+    }
+  }
+
+  public Date add(int workday) {
+    if (workday < 0) {
+      System.out.println("No changes due to invalid input");
+      return this;
+    }
+    while (workday >= 28) {
+      if (monthLength == MonthLength._28) {
+        workday -= 28;
+        nextMonth(this.month);
+      } else if (monthLength == MonthLength._30) {
+        workday -= 30;
+        nextMonth(this.month);
+      } else {
+        workday -= 31;
+        nextMonth(this.month);
+      }
+    }
+    int remainingDays = workday;
+    switch (monthLength) {
+      case _28:
+        if (this.day + workday > 28) {
+          nextMonth(this.month);
+          remainingDays = getRemainingWorkday(workday, this.day, 28);
+          setDay(1);
+        }
+        break;
+      case _30:
+        if (this.day + workday > 30) {
+          nextMonth(this.month);
+          remainingDays = getRemainingWorkday(workday, this.day, 30);
+          setDay(1);
+        }
+        break;
+      case _31:
+        if (this.day + workday > 31) {
+          nextMonth(this.month);
+          remainingDays = getRemainingWorkday(workday, this.day, 31);
+          setDay(1);
+        }
+        break;
+    }
+    setDay(this.day + remainingDays);
+    return this;
+  }
+
+  private int getRemainingWorkday(int workday, int currDay, int numberOfDaysInMonth) {
+    int remainingDays;
+    if (workday >= currDay) {
+      remainingDays = numberOfDaysInMonth - (workday - this.day);
+    } else  {
+      remainingDays = workday - (numberOfDaysInMonth - currDay) - 1;
+    }
+    return remainingDays;
+  }
+
+  private void nextMonth(int month) {
+    if (month == 12) {
+      setMonth(1);
+    } else {
+      setMonth(this.month + 1);
     }
   }
 
   public int getYear() {
     return year;
   }
+
   public void setYear(int year) {
     if (year >= 0) {
       this.year = year;
+    } else {
+      System.out.println("year field did not change due to invalid input");
     }
   }
 
   public int getMonth() {
     return month;
   }
+
   public void setMonth(int month) {
-    this.month = month;
+    if (month >= 1 && month <= 12) {
+      this.month = month;
+      this.monthLength = month == 2 ? MonthLength._28 : month % 2 == 0 ? MonthLength._30 : MonthLength._31;
+    } else {
+      System.out.println("month field did not change due to invalid input");
+    }
   }
 
   public int getDay() {
     return day;
   }
+
   public void setDay(int day) {
-    this.day = day;
+    if ((this.monthLength == MonthLength._28 && day >= 1 && day <= 28) ||
+        (this.monthLength == MonthLength._30 && day >= 1 && day <= 30) ||
+        (this.monthLength == MonthLength._31 && day >= 1 && day <= 31)
+    ) {
+      this.day = day;
+    } else {
+      System.out.println("day field did not change due to invalid input");
+    }
   }
 
   public int getHour() {
     return hour;
   }
+
   public void setHour(int hour) {
-    this.hour = hour;
+    int hourInMin = hour * 60 + this.min;
+    if (hour >= 9 && hour <= 17 && (hourInMin >= 540 && hourInMin <= 1020)) {
+      this.hour = hour;
+    } else {
+      System.out.println("hour field did not change due to invalid input");
+    }
   }
 
   public int getMin() {
     return min;
   }
+
   public void setMin(int min) {
-    this.min = min;
+    if (min >= 0 && min <= 59) {
+      this.min = min;
+    } else {
+      System.out.println("min field did not change due to invalid input");
+    }
   }
 
   public MonthLength getMonthLength() {
     return monthLength;
   }
-  public void setMonthLength(MonthLength monthLength) {
-    this.monthLength = monthLength;
+
+  @Override
+  public String toString() {
+    return "Year: " + this.year + "\n" +
+           "Month: " + this.month + "\n" +
+           "Day: " + this.day + "\n" +
+           "Hour: " + this.hour + "\n" +
+           "Min: " + this.min + "\n" +
+           "Length of month: " + this.monthLength;
   }
 }

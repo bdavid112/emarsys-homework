@@ -1,16 +1,19 @@
 package hu;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+// This test class is written to check that no invalid input could be used to create or change a Date type instance.
 public class DateInputTest {
+  Date testDate = new Date(2022, 1, 1, 16, 20);
   Date invalidDate;
 
-  // checking every possible invalid input scenarios
+  // Checking every possible invalid input scenarios
   @Test
-  void invalidInput() {
+  void invalidInputWhenConstructing() {
     try {
       invalidDate = new Date(-2000, 11, 27, 16, 20);
     } catch (RuntimeException e) {
@@ -61,14 +64,14 @@ public class DateInputTest {
     assertNull(invalidDate);
 
     try {
-      invalidDate = new Date(2022, 3, 31, -1, 30);
+      invalidDate = new Date(2022, 3, 31, 8, 30);
     } catch (RuntimeException e) {
       assertEquals("Invalid date", e.getMessage());
     }
     assertNull(invalidDate);
 
     try {
-      invalidDate = new Date(2022, 3, 31, 24, 30);
+      invalidDate = new Date(2022, 3, 31, 17, 30);
     } catch (RuntimeException e) {
       assertEquals("Invalid date", e.getMessage());
     }
@@ -87,5 +90,34 @@ public class DateInputTest {
       assertEquals("Invalid date", e.getMessage());
     }
     assertNull(invalidDate);
+  }
+
+  @Test
+  void invalidInputWhenModifying() {
+    Date modifiedTestDate = testDate;
+    modifiedTestDate.setYear(-1);
+    assertEquals(testDate, modifiedTestDate);
+    modifiedTestDate.setMonth(-1);
+    assertEquals(testDate, modifiedTestDate);
+    modifiedTestDate.setMonth(13);
+    assertEquals(testDate, modifiedTestDate);
+    modifiedTestDate.setDay(-1);
+    assertEquals(testDate, modifiedTestDate);
+    modifiedTestDate.setDay(32);
+    assertEquals(testDate, modifiedTestDate);
+    modifiedTestDate.setMonth(2);
+    modifiedTestDate.setDay(29);
+    assertEquals(testDate, modifiedTestDate);
+    modifiedTestDate.setMonth(4);
+    modifiedTestDate.setDay(31);
+    assertEquals(testDate, modifiedTestDate);
+    modifiedTestDate.setHour(8);
+    assertEquals(testDate, modifiedTestDate);
+    modifiedTestDate.setHour(18);
+    assertEquals(testDate, modifiedTestDate);
+    modifiedTestDate.setMin(-1);
+    assertEquals(testDate, modifiedTestDate);
+    modifiedTestDate.setMin(60);
+    assertEquals(testDate, modifiedTestDate);
   }
 }
