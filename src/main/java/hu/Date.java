@@ -21,7 +21,7 @@ public class Date {
     this.day = day;
     this.hour = hour;
     this.min = min;
-    this.monthLength = month == 2 ? MonthLength._28 : month % 2 == 0 ? MonthLength._30 : MonthLength._31;
+    this.monthLength = getMonthLength(month);
     validInputCheck(this.year, this.month, this.monthLength, this.day, this.hour, this.min);
   }
 
@@ -36,6 +36,17 @@ public class Date {
     int hourInMin = hour * 60 + min;
     if (year < 0 || (month < 1 || month > 12) || (hour < 9 || hour > 17) || (min < 0 || min > 59) || (hourInMin < 540 || hourInMin > 1020)) {
       throw new RuntimeException("Invalid date");
+    }
+  }
+
+  private MonthLength getMonthLength(int month) {
+    if (month == 2) {
+      return MonthLength._28;
+    }
+    if (month < 8) {
+      return month % 2 == 0 ? MonthLength._30 : MonthLength._31;
+    } else {
+      return month % 2 == 0 ? MonthLength._31 : MonthLength._30;
     }
   }
 
@@ -57,6 +68,41 @@ public class Date {
       }
     }
     int remainingDays = workday;
+    remainingDays = getRemainingDays(workday, remainingDays);
+    setDay(this.day + remainingDays);
+    return this;
+  }
+
+  public Date add(int workday, int hour) {
+    if (hour >= 8) {
+      workday = workday + hour / 8;
+      hour %= 8;
+    }
+    if (workday > 0) {
+      add(workday);
+    }
+    if (this.hour + hour >= 17) {
+      setDay(this.day + 1);
+      hour = hour + this.hour - 17;
+      setHour(9);
+    }
+    setHour(this.hour + hour);
+    return this;
+  }
+
+  public Date add(int workday, int hour, int min) {
+    if (this.min + min >= 60) {
+      hour = hour + min / 60;
+      min %= 60;
+    }
+    if (hour > 0) {
+      add(workday, hour);
+    }
+    setMin(this.min + min);
+    return this;
+  }
+
+  private int getRemainingDays(int workday, int remainingDays) {
     switch (monthLength) {
       case _28:
         if (this.day + workday > 28) {
@@ -80,8 +126,7 @@ public class Date {
         }
         break;
     }
-    setDay(this.day + remainingDays);
-    return this;
+    return remainingDays;
   }
 
   private int getRemainingWorkday(int workday, int currDay, int numberOfDaysInMonth) {
@@ -173,11 +218,10 @@ public class Date {
 
   @Override
   public String toString() {
-    return "Year: " + this.year + "\n" +
-           "Month: " + this.month + "\n" +
-           "Day: " + this.day + "\n" +
-           "Hour: " + this.hour + "\n" +
-           "Min: " + this.min + "\n" +
-           "Length of month: " + this.monthLength;
+    String monthString = this.month < 10 ? "0" + this.month : "" + this.month;
+    String dayString = this.day < 10 ? "0" + this.day : "" + this.day;
+    String hourString = this.hour < 10 ? "0" + this.hour : "" + this.hour;
+    String minString = this.min < 10 ? "0" + this.min : "" + this.min;
+    return this.year + "." + monthString + "." + dayString + "." + " " + hourString + ":" + minString;
   }
 }
