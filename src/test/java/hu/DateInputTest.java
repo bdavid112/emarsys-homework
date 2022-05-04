@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 // This test class is written to check that no invalid input could be used to create or change a Date type instance.
 public class DateInputTest {
-  Date testDate = new Date(2022, 1, 1, 16, 20);
+  Date testDate = new Date(2022, 1, 3, 16, 20);
   Date invalidDate;
 
   // Checking every possible invalid input scenarios
