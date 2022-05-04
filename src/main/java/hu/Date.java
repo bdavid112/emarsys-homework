@@ -6,7 +6,9 @@ public class Date {
   private int day;
   private int hour;
   private int min;
+  private boolean leapYear;
 
+  private String dayOfWeek;
   private MonthLength monthLength;
 
   public enum MonthLength {
@@ -21,12 +23,16 @@ public class Date {
     this.day = day;
     this.hour = hour;
     this.min = min;
-    this.monthLength = getMonthLength(month);
+    setMonthLength(month);
+    setLeapYear(year);
     validInputCheck(this.year, this.month, this.monthLength, this.day, this.hour, this.min);
+    setDayOfWeek();
   }
 
   private void validInputCheck(int year, int month, MonthLength monthLength, int day, int hour, int min) {
-    if (monthLength == MonthLength._28 && (day < 1 || day > 28)) {
+    if (monthLength == MonthLength._28 && (day < 1 || day > 28) && !leapYear) {
+      throw new RuntimeException("Invalid day");
+    } else if (monthLength == MonthLength._28 && (day < 1 || day > 29)) {
       throw new RuntimeException("Invalid day");
     } else if (monthLength == MonthLength._30 && (day < 1 || day > 30)) {
       throw new RuntimeException("Invalid day");
@@ -39,25 +45,17 @@ public class Date {
     }
   }
 
-  private MonthLength getMonthLength(int month) {
-    if (month == 2) {
-      return MonthLength._28;
-    }
-    if (month < 8) {
-      return month % 2 == 0 ? MonthLength._30 : MonthLength._31;
-    } else {
-      return month % 2 == 0 ? MonthLength._31 : MonthLength._30;
-    }
-  }
-
   public Date add(int workday) {
     if (workday < 0) {
       System.out.println("No changes due to invalid input");
       return this;
     }
     while (workday >= 28) {
-      if (monthLength == MonthLength._28) {
+      if (monthLength == MonthLength._28 && !leapYear) {
         workday -= 28;
+        nextMonth(this.month);
+      } else if (monthLength == MonthLength._28) {
+        workday -= 29;
         nextMonth(this.month);
       } else if (monthLength == MonthLength._30) {
         workday -= 30;
@@ -105,9 +103,13 @@ public class Date {
   private int getRemainingDays(int workday, int remainingDays) {
     switch (monthLength) {
       case _28:
-        if (this.day + workday > 28) {
+        if (this.day + workday > 28 && !leapYear) {
           nextMonth(this.month);
           remainingDays = getRemainingWorkday(workday, this.day, 28);
+          setDay(1);
+        } else if (this.day + workday > 29) {
+          nextMonth(this.month);
+          remainingDays = getRemainingWorkday(workday, this.day, 29);
           setDay(1);
         }
         break;
@@ -141,6 +143,7 @@ public class Date {
 
   private void nextMonth(int month) {
     if (month == 12) {
+      setYear(this.year + 1);
       setMonth(1);
     } else {
       setMonth(this.month + 1);
@@ -154,6 +157,7 @@ public class Date {
   public void setYear(int year) {
     if (year >= 0) {
       this.year = year;
+      setLeapYear(year);
     } else {
       System.out.println("year field did not change due to invalid input");
     }
@@ -166,7 +170,7 @@ public class Date {
   public void setMonth(int month) {
     if (month >= 1 && month <= 12) {
       this.month = month;
-      this.monthLength = month == 2 ? MonthLength._28 : month % 2 == 0 ? MonthLength._30 : MonthLength._31;
+      setMonthLength(month);
     } else {
       System.out.println("month field did not change due to invalid input");
     }
@@ -177,7 +181,8 @@ public class Date {
   }
 
   public void setDay(int day) {
-    if ((this.monthLength == MonthLength._28 && day >= 1 && day <= 28) ||
+    if ((this.monthLength == MonthLength._28 && day >= 1 && day <= 28 && !leapYear) ||
+        (this.monthLength == MonthLength._28 && day >= 1 && day <= 29 && leapYear) ||
         (this.monthLength == MonthLength._30 && day >= 1 && day <= 30) ||
         (this.monthLength == MonthLength._31 && day >= 1 && day <= 31)
     ) {
@@ -214,6 +219,47 @@ public class Date {
 
   public MonthLength getMonthLength() {
     return monthLength;
+  }
+
+  private void setMonthLength(int month) {
+    if (month == 2) {
+      this.monthLength = MonthLength._28;
+    } else if (month < 8) {
+      this.monthLength = month % 2 == 0 ? MonthLength._30 : MonthLength._31;
+    } else {
+      this.monthLength = month % 2 == 0 ? MonthLength._31 : MonthLength._30;
+    }
+  }
+
+  public boolean isLeapYear() {
+    return leapYear;
+  }
+
+  private void setLeapYear(int year) {
+    if (year % 100 == 0 && year % 400 == 0) {
+      this.leapYear =  true;
+    } else {
+      this.leapYear = year % 4 == 0;
+    }
+  }
+
+  public String getDayOfWeek() {
+    return dayOfWeek;
+  }
+
+  private void setDayOfWeek() {
+    int[] monthValue = {0, 3, 3, 6, 1, 4, 6, 2, 5, 0, 3, 5};
+    String[] daysOfWeek = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
+    int lastTwoDigitsOfYear = year % 100;
+    int dayIndex = (lastTwoDigitsOfYear + lastTwoDigitsOfYear / 4 + day + monthValue[month - 1] + 6) % 7;
+    if (leapYear) {
+      if (dayIndex > 0) {
+        dayIndex--;
+      } else {
+        dayIndex += 6;
+      }
+    }
+    dayOfWeek = daysOfWeek[dayIndex];
   }
 
   @Override
