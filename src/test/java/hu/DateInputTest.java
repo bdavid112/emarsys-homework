@@ -1,6 +1,5 @@
 package hu;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -36,28 +35,7 @@ public class DateInputTest {
     assertNull(invalidDate);
 
     try {
-      invalidDate = new Date(2022, 4, -2, 10, 30);
-    } catch (RuntimeException e) {
-      assertEquals("Invalid day", e.getMessage());
-    }
-    assertNull(invalidDate);
-
-    try {
-      invalidDate = new Date(2022, 2, 29, 10, 30);
-    } catch (RuntimeException e) {
-      assertEquals("Invalid day", e.getMessage());
-    }
-    assertNull(invalidDate);
-
-    try {
-      invalidDate = new Date(2022, 1, 32, 10, 30);
-    } catch (RuntimeException e) {
-      assertEquals("Invalid day", e.getMessage());
-    }
-    assertNull(invalidDate);
-
-    try {
-      invalidDate = new Date(2022, 4, 31, 10, 30);
+      invalidDate = new Date(2022, 4, -1, 10, 30);
     } catch (RuntimeException e) {
       assertEquals("Invalid day", e.getMessage());
     }

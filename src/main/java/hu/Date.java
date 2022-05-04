@@ -26,7 +26,6 @@ public class Date {
     setMonthLength(month);
     setLeapYear(year);
     validInputCheck(this.year, this.month, this.monthLength, this.day, this.hour, this.min);
-    setDayOfWeek();
   }
 
   private void validInputCheck(int year, int month, MonthLength monthLength, int day, int hour, int min) {
@@ -40,52 +39,14 @@ public class Date {
       throw new RuntimeException("Invalid day");
     }
     int hourInMin = hour * 60 + min;
-    if (year < 0 || (month < 1 || month > 12) || (hour < 9 || hour > 17) || (min < 0 || min > 59) || (hourInMin < 540 || hourInMin > 1020)) {
+    if ((year < 2000 || year > 2099) || (month < 1 || month > 12) || (hour < 9 || hour > 17) ||
+        (min < 0 || min > 59) || (hourInMin < 540 || hourInMin > 1020)) {
       throw new RuntimeException("Invalid date");
     }
-  }
-
-  public Date add(int workday) {
-    if (workday < 0) {
-      System.out.println("No changes due to invalid input");
-      return this;
+    setDayOfWeek();
+    if (dayOfWeek.equals("Saturday") || dayOfWeek.equals("Sunday")) {
+      throw new RuntimeException("Submit date must be a workday!");
     }
-    while (workday >= 28) {
-      if (monthLength == MonthLength._28 && !leapYear) {
-        workday -= 28;
-        nextMonth(this.month);
-      } else if (monthLength == MonthLength._28) {
-        workday -= 29;
-        nextMonth(this.month);
-      } else if (monthLength == MonthLength._30) {
-        workday -= 30;
-        nextMonth(this.month);
-      } else {
-        workday -= 31;
-        nextMonth(this.month);
-      }
-    }
-    int remainingDays = workday;
-    remainingDays = getRemainingDays(workday, remainingDays);
-    setDay(this.day + remainingDays);
-    return this;
-  }
-
-  public Date add(int workday, int hour) {
-    if (hour >= 8) {
-      workday = workday + hour / 8;
-      hour %= 8;
-    }
-    if (workday > 0) {
-      add(workday);
-    }
-    if (this.hour + hour >= 17) {
-      setDay(this.day + 1);
-      hour = hour + this.hour - 17;
-      setHour(9);
-    }
-    setHour(this.hour + hour);
-    return this;
   }
 
   public Date add(int workday, int hour, int min) {
@@ -93,52 +54,44 @@ public class Date {
       hour = hour + min / 60;
       min %= 60;
     }
-    if (hour > 0) {
-      add(workday, hour);
+    if (hour > 0 || workday > 0) {
+      addHours(workday, hour);
     }
     setMin(this.min + min);
     return this;
   }
 
-  private int getRemainingDays(int workday, int remainingDays) {
-    switch (monthLength) {
-      case _28:
-        if (this.day + workday > 28 && !leapYear) {
-          nextMonth(this.month);
-          remainingDays = getRemainingWorkday(workday, this.day, 28);
-          setDay(1);
-        } else if (this.day + workday > 29) {
-          nextMonth(this.month);
-          remainingDays = getRemainingWorkday(workday, this.day, 29);
-          setDay(1);
-        }
-        break;
-      case _30:
-        if (this.day + workday > 30) {
-          nextMonth(this.month);
-          remainingDays = getRemainingWorkday(workday, this.day, 30);
-          setDay(1);
-        }
-        break;
-      case _31:
-        if (this.day + workday > 31) {
-          nextMonth(this.month);
-          remainingDays = getRemainingWorkday(workday, this.day, 31);
-          setDay(1);
-        }
-        break;
+  private void addHours(int workday, int hour) {
+    if (hour >= 8) {
+      workday = workday + hour / 8;
+      hour %= 8;
     }
-    return remainingDays;
+    if (workday > 0) {
+      addDays(workday);
+    }
+    if (this.hour + hour >= 17) {
+      setDay(this.day + 1);
+      hour = hour + this.hour - 17;
+      setHour(9);
+    }
+    setHour(this.hour + hour);
   }
 
-  private int getRemainingWorkday(int workday, int currDay, int numberOfDaysInMonth) {
-    int remainingDays;
-    if (workday >= currDay) {
-      remainingDays = numberOfDaysInMonth - (workday - this.day);
-    } else  {
-      remainingDays = workday - (numberOfDaysInMonth - currDay) - 1;
+  private void addDays(int workday) {
+    if (workday < 0) {
+      System.out.println("No changes due to invalid input");
     }
-    return remainingDays;
+    int remainingDays = workday;
+    while (remainingDays > 0) {
+      setDay(this.day + 1);
+      remainingDays--;
+      if (this.dayOfWeek.equals("Saturday")) {
+        setDay(this.day + 1);
+      }
+      if (this.dayOfWeek.equals("Sunday")) {
+        setDay(this.day + 1);
+      }
+    }
   }
 
   private void nextMonth(int month) {
@@ -187,6 +140,15 @@ public class Date {
         (this.monthLength == MonthLength._31 && day >= 1 && day <= 31)
     ) {
       this.day = day;
+      setDayOfWeek();
+    } else if (this.monthLength == MonthLength._28 && day == 29 ||
+        this.monthLength == MonthLength._28 && day == 30 && leapYear ||
+        this.monthLength == MonthLength._30 && day == 31 ||
+        this.monthLength == MonthLength._31 && day == 32
+    ) {
+      nextMonth(this.month);
+      setDay(1);
+      setDayOfWeek();
     } else {
       System.out.println("day field did not change due to invalid input");
     }
@@ -268,6 +230,6 @@ public class Date {
     String dayString = this.day < 10 ? "0" + this.day : "" + this.day;
     String hourString = this.hour < 10 ? "0" + this.hour : "" + this.hour;
     String minString = this.min < 10 ? "0" + this.min : "" + this.min;
-    return this.year + "." + monthString + "." + dayString + "." + " " + hourString + ":" + minString;
+    return this.year + "." + monthString + "." + dayString + "." + " " + hourString + ":" + minString + " " + dayOfWeek;
   }
 }
