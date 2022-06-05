@@ -1,6 +1,11 @@
 package hu;
 
 public class Date {
+  private final int MIN_HOURS_IN_MINUTES = 540;
+  private final int MAX_HOURS_IN_MINUTES = 1020;
+  private final int START_OF_WORK_HOURS = 9;
+  private final int END_OF_WORK_HOURS = 17;
+  private final int TOTAL_WORK_HOURS = 8;
   private int year;
   private int month;
   private int day;
@@ -39,8 +44,8 @@ public class Date {
       throw new RuntimeException("Invalid day");
     }
     int hourInMin = hour * 60 + min;
-    if ((year < 2000 || year > 2099) || (month < 1 || month > 12) || (hour < 9 || hour > 17) ||
-        (min < 0 || min > 59) || (hourInMin < 540 || hourInMin > 1020)) {
+    if ((year < 2000 || year > 2099) || (month < 1 || month > 12) || (hour < START_OF_WORK_HOURS || hour > END_OF_WORK_HOURS) ||
+        (min < 0 || min > 59) || (hourInMin < MIN_HOURS_IN_MINUTES || hourInMin > MAX_HOURS_IN_MINUTES)) {
       throw new RuntimeException("Invalid date");
     }
     setDayOfWeek();
@@ -62,17 +67,17 @@ public class Date {
   }
 
   private void addHours(int workday, int hour) {
-    if (hour >= 8) {
-      workday = workday + hour / 8;
-      hour %= 8;
+    if (hour >= TOTAL_WORK_HOURS) {
+      workday = workday + hour / TOTAL_WORK_HOURS;
+      hour %= TOTAL_WORK_HOURS;
     }
     if (workday > 0) {
       addDays(workday);
     }
-    if (this.hour + hour >= 17) {
+    if (this.hour + hour >= END_OF_WORK_HOURS) {
       setDay(this.day + 1);
-      hour = hour + this.hour - 17;
-      setHour(9);
+      hour = hour + this.hour - END_OF_WORK_HOURS;
+      setHour(START_OF_WORK_HOURS);
     }
     setHour(this.hour + hour);
   }
@@ -160,7 +165,7 @@ public class Date {
 
   public void setHour(int hour) {
     int hourInMin = hour * 60 + this.min;
-    if (hour >= 9 && hour <= 17 && (hourInMin >= 540 && hourInMin <= 1020)) {
+    if (hour >= START_OF_WORK_HOURS && hour <= END_OF_WORK_HOURS && (hourInMin >= MIN_HOURS_IN_MINUTES && hourInMin <= MAX_HOURS_IN_MINUTES)) {
       this.hour = hour;
     } else {
       System.out.println("hour field did not change due to invalid input");
