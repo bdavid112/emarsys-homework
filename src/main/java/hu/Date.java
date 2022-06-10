@@ -6,11 +6,13 @@ public class Date {
   private final int START_OF_WORK_HOURS = 9;
   private final int END_OF_WORK_HOURS = 17;
   private final int TOTAL_WORK_HOURS = 8;
+
   private int year;
   private int month;
   private int day;
   private int hour;
   private int min;
+
   private boolean leapYear;
 
   private String dayOfWeek;
@@ -108,10 +110,6 @@ public class Date {
     }
   }
 
-  public int getYear() {
-    return year;
-  }
-
   public void setYear(int year) {
     if (year >= 0) {
       this.year = year;
@@ -121,10 +119,6 @@ public class Date {
     }
   }
 
-  public int getMonth() {
-    return month;
-  }
-
   public void setMonth(int month) {
     if (month >= 1 && month <= 12) {
       this.month = month;
@@ -132,10 +126,6 @@ public class Date {
     } else {
       System.out.println("month field did not change due to invalid input");
     }
-  }
-
-  public int getDay() {
-    return day;
   }
 
   public void setDay(int day) {
@@ -159,10 +149,6 @@ public class Date {
     }
   }
 
-  public int getHour() {
-    return hour;
-  }
-
   public void setHour(int hour) {
     int hourInMin = hour * 60 + this.min;
     if (hour >= START_OF_WORK_HOURS && hour <= END_OF_WORK_HOURS && (hourInMin >= MIN_HOURS_IN_MINUTES && hourInMin <= MAX_HOURS_IN_MINUTES)) {
@@ -170,10 +156,6 @@ public class Date {
     } else {
       System.out.println("hour field did not change due to invalid input");
     }
-  }
-
-  public int getMin() {
-    return min;
   }
 
   public void setMin(int min) {
